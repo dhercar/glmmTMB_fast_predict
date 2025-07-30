@@ -77,6 +77,7 @@ library(ggplot2)
 
 ``` r
 library(ggeffects)
+# generate predictions
 pred_ggpredict <- data.frame(ggpredict(m, newdata))
 
 (pred_plot_ggeffects <- ggplot(pred_ggpredict, aes(x = x, y = predicted)) +
