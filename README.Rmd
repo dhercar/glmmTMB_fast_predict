@@ -1,0 +1,68 @@
+---
+title: "Fast predictions from glmmTMB models"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+This repository contains a single function, `predict_delta_glmmTMB`, which returns predicitons and confidence intervals for model predictions fitted with glmmTMB. Confidence intervals are computed using the Delta method. The function is much faster and uses less memory than `ggeffects::ggpredict`, but does not perform any checks.
+
+## Example
+
+1. Fake data
+
+```{r cars}
+set.seed(2)
+n = 100
+
+# covariates
+data = replicate(2, rnorm(n, 0,1))
+
+# parameters
+b = c(0.5, 0.2)
+sd = 0.2
+
+# response
+y = 0 + data %*% b + rnorm(n, sd = sd)
+data = data.frame(y = y, data)
+
+```
+
+
+2. Fit model 
+
+```{r, echo = FALSE, results=FALSE, message=FALSE}
+library(glmmTMB)
+m <- glmmTMB(y ~X1 + X2, data = data)
+```
+
+
+3. Generate predictions
+
+```{r}
+source('glmmTMB_predict_delta.R')
+
+#newdata
+newdata <- expand.grid(X1 = seq(-1.5, 1.5, length.out = 100),
+                       X2 = c(-1.5, 0, 1.5))
+
+
+pred <- predict_delta_glmmTMB(m, newdata)
+head(pred)
+
+```
+
+
+4. Create plot
+
+```{r, message=FALSE}
+library(ggplot2)
+ggplot(pred, aes(x = X1, y = fit)) +
+  geom_line(aes(colour = as.factor(X2))) +
+  geom_ribbon(aes(fill = as.factor(X2), ymin = conf_low, ymax = conf_high), alpha = 0.2) + 
+  theme(aspect.ratio = 1)
+```
+
