@@ -5,7 +5,7 @@ This repository contains a single function, `predict_delta_glmmTMB`,
 which returns predicitons and confidence intervals for model predictions
 fitted with glmmTMB. Confidence intervals are computed using the Delta
 method. The function is much faster and uses less memory than
-`ggeffects::ggpredict`.
+`ggeffects::ggpredict`, but does not perform any checks.
 
 ## Example
 
@@ -62,10 +62,30 @@ head(pred)
 
 ``` r
 library(ggplot2)
-ggplot(pred, aes(x = X1, y = fit)) +
+(pred_plot <- ggplot(pred, aes(x = X1, y = fit)) +
   geom_line(aes(colour = as.factor(X2))) +
   geom_ribbon(aes(fill = as.factor(X2), ymin = conf_low, ymax = conf_high), alpha = 0.2) + 
-  theme(aspect.ratio = 1)
+  theme_minimal() + 
+  theme(aspect.ratio = 1,
+        legend.position = 'inside',
+        legend.position.inside = c(0.8, 0.2)))
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+5.  Compare to `ggeffects::ggpredict`
+
+``` r
+library(ggeffects)
+pred_ggpredict <- data.frame(ggpredict(m, newdata))
+
+(pred_plot_ggeffects <- ggplot(pred_ggpredict, aes(x = x, y = predicted)) +
+  geom_line(aes(colour = group)) +
+  geom_ribbon(aes(fill = group, ymin = conf.low, ymax = conf.high), alpha = 0.2) + 
+  theme_minimal() + 
+  theme(aspect.ratio = 1,
+        legend.position = 'inside',
+        legend.position.inside = c(0.8, 0.2))) 
+```
+
+![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
